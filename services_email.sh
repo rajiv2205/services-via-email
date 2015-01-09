@@ -113,23 +113,50 @@ function messageid_check()
         fi
 }
 
+function acknowledge_Sender()
+{
+  if [ $status -eq 0 ];
+                then
+                    echo -e "Hi Admin, \n \nI have $acknowl daemon at `date` \n \nroot" | mail -s "IMPORTANT: Server Message" $(cat validsender.txt | grep -v "^#")
+                    echo $messageid > .tmp
+                    echo $newcount > .count
+                else
+                echo "There is some problem,  not $acknowl at `date`" >> logfile
+  fi
+}
+
 function service_Executer()
 {
         for i in $(cat services.txt | grep -v "^#")
 do
-        if [[ $i == $SUBJECT ]];
+        if [[ "$i restart" == "$SUBJECT" ]];
         then
-                /etc/init.d/$i restart 2>> logfile
+                /etc/init.d/$SUBJECT 2>> logfile
                 status=$?
-                echo -e "Hi Admin, \n \n I have restarted $i at `date`" | mail -s "IMPORTANT: Server Message" $(cat validsender.txt | grep -v "^#")
-   if [ $status -eq 0 ];
-   then
-         echo $messageid > .tmp
-         echo $newcount > .count
-   else
-                echo "There is some problem, service not restarted at `date`" >> logfile
-   fi
-fi
+                acknowl="restarted $i"
+                acknowledge_Sender
+        
+        elif [[ "$i reload" == "$SUBJECT" ]];
+        then
+                /etc/init.d/$SUBJECT 2>> logfile
+                status=$?
+                acknowl="reloaded $i"
+                acknowledge_Sender
+
+        elif [[ "$i start" == "$SUBJECT" ]];
+        then
+                /etc/init.d/$SUBJECT 2>> logfile
+                status=$?
+                acknowl="started $i"
+                acknowledge_Sender
+
+        elif [[ "$i stop" == "$SUBJECT" ]];
+        then
+                /etc/init.d/$SUBJECT 2>> logfile
+                status=$?
+                acknowl="stopped $i"
+                acknowledge_Sender
+        fi
 done
 }
 
