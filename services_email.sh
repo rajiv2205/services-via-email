@@ -5,11 +5,11 @@
 # Author: Rajiv Sharma
 # License: GPL
 
-# .subjectfile and .idfile are queue for Subjects and Message IDs of emails received by the server.
+# .subjectfile and .idfile are queue for Subject and Message ID of emails received by the server.
 # .tmp file stores the Message ID of last executed service's email.
-# Add the names of services in file "services.txt" (One service in one line without any space in the beginning). 
-# If you want to exclude any service from the list then commane out the service name. 
-# Add the emails addresses of authenticated users in file "validsenders.txt" to whom you want to give privildge for restarting services.
+# Add the name of services in file "services.txt" (One service in one line without any space in the beginning). 
+# If you want to exclude any service from the list then comment out the service name. 
+# Add the email addresses of authenticated users in file "validsenders.txt" to whom you want to give priviledge for restarting service.
 
 # .count file stores difference to setup queue of emails received by the server in 1 minute.
 
@@ -162,3 +162,16 @@ done
 
 initialization  # Main Execution 
 
+# resetting counters and cleaning mail directory.
+defined_SIZE=4
+defined_SIZE1=8
+file_SIZE=`du -m $MAIL | sed 's/^\(.*\)\t.*/\1/'`
+if [[ "$file_SIZE" -ge "$defined_SIZE" ]]
+    then
+    echo "Hi Admin, \n \nMail Directory is going out of size ($file_SIZE)  \n \n \nroot" | mail -s "NOTIFICATION: SERVER MAIL DIRECTORY" $(cat validsender.txt | grep -v "^#")
+    if [[ "$file_SIZE" -ge "$defined_SIZE1"  ]]
+        then
+        echo "" > $MAIL
+        echo "0" > $location/.count
+    fi
+fi
